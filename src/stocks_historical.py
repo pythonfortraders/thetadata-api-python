@@ -1,12 +1,11 @@
-import requests
-import logging
 import pandas as pd
 import os
 
 from .utils import is_valid_date_format
+from .base import ThetaDataBase
 
 
-class ThetaDataStocksHistorical:
+class ThetaDataStocksHistorical(ThetaDataBase):
     def __init__(self, log_level: str = "WARNING", output_dir: str = "./") -> None:
         """
         Initialize the ThetaDataStocksHistorical class.
@@ -17,44 +16,7 @@ class ThetaDataStocksHistorical:
 
         This constructor sets up logging and initializes the output directory.
         """
-        # Configure logging
-        logging.basicConfig(
-            level=getattr(logging, log_level.upper()),
-            format="%(asctime)s - %(levelname)s - %(message)s",
-        )
-        self.logger = logging.getLogger(__name__)
-        self.output_dir = output_dir
-
-    def send_request(self, endpoint: str, params: dict) -> dict | None:
-        """
-        Send a GET request to the specified endpoint with the given parameters.
-
-        Args:
-            endpoint (str): The API endpoint to send the request to.
-            params (dict): A dictionary of query parameters to include in the request.
-
-        Returns:
-            dict | None: The JSON response from the API if successful, or None if an error occurs.
-
-        This method handles the HTTP request, logging, and error handling for all API calls.
-        It uses a base URL of 'http://127.0.0.1:25510'.
-        """
-        url = f"http://127.0.0.1:25510{endpoint}"
-        headers = {"Accept": "application/json"}
-        response = None
-
-        try:
-            self.logger.debug(f"Sending request to {url} with params: {params}")
-            response = requests.get(url, headers=headers, params=params)
-            response.raise_for_status()
-            self.logger.info("Request successful")
-            return response.json()
-        except requests.RequestException as e:
-            self.logger.error(f"An error occurred: {e}")
-            self.logger.error(
-                f"Response text: {response.text if response else 'No response'}"
-            )
-            return None
+        super().__init__(log_level, output_dir)
 
     def _process_response(
         self,
@@ -109,7 +71,6 @@ class ThetaDataStocksHistorical:
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
         """
-
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
             self.logger.info(f"Created output directory: {self.output_dir}")
