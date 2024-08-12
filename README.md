@@ -1,11 +1,26 @@
 # thetadata-api-python
 
-This is a simple, easy-to-use, unofficial Python wrapper for the thetadata API.
+A simple, easy-to-use, unofficial Python wrapper for the thetadata API.
 
-Context: 
-* ThetaData offers a [thetadata-python](https://github.com/ThetaData-API/thetadata-python) library, but it is deprecated and it's preferred to use the REST API directly. 
-* Their documentation provides Python examples for the REST API that are useful and comprehensive. You'll find these on every endpoint page ([example](https://http-docs.thetadata.us/docs/theta-data-rest-api-v2/a38vp739baoch-quote-snapshot)).
-* This library is just a simple wrapper on those into neat classes and functions that anyone can download and use. One benefit is easy integration with pandas, so you may get data directly into a DataFrame. However, this library as a whole isn't meant to be novel or official, just a convenience.
+## Context 
+ThetaData offers a [thetadata-python](https://github.com/ThetaData-API/thetadata-python) library, but it is deprecated and it's preferred to use the REST API directly. Their documentation provides Python examples for the REST API that are useful and comprehensive and you'll find these on every endpoint page ([example](https://http-docs.thetadata.us/docs/theta-data-rest-api-v2/a38vp739baoch-quote-snapshot)). This library is a simple wrapper on those examples into neat classes and functions that anyone can download and use. It provides 2 additional conveniences:
+
+1. Integration with pandas, so data is returned to your program directly in a DataFrame.
+2. A CLI (command-line-interface) wrapper for downloading data directly without writing any code yourself
+
+## Installation 
+
+[ TBD ] 
+
+## Usage
+
+From Python:
+
+``` insert example code ``` 
+
+From the command line: 
+
+``` insert example commands ``` 
 
 ## Get Started with ThetaData in Python
 
