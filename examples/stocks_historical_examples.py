@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.stocks_historical import ThetaDataStocksHistorical
 
-historical_data = ThetaDataStocksHistorical(enable_logging=True, use_df=True)
+historical_data = ThetaDataStocksHistorical(log_level="DEBUG")
 
 
 def example_runner(func):
@@ -87,10 +87,10 @@ def intel_dividends_example():
 # Toggle example cases
 if __name__ == "__main__":
     run_examples = {
-        "apple_eod_example": False,
-        "microsoft_quotes_example": False,
-        "google_ohlc_example": False,
-        "tesla_trades_example": False,
+        "apple_eod_example": True,
+        "microsoft_quotes_example": True,
+        "google_ohlc_example": True,
+        "tesla_trades_example": True,
         "amazon_trade_quote_example": True,
         "nvidia_splits_example": True,
         "intel_dividends_example": True,
