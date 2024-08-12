@@ -3,8 +3,8 @@ import logging
 import pandas as pd
 import os
 
-from base import ThetaDataBase
-from utils import is_valid_right, is_valid_ivl
+from .base import ThetaDataBase
+from .utils import is_valid_right, is_valid_ivl
 
 
 class ThetaDataOptions(ThetaDataBase):
@@ -1992,7 +1992,7 @@ class ThetaDataOptions(ThetaDataBase):
         endpoint = "/v2/snapshot/option/quote"
 
         if not is_valid_right(right):
-            raise ValueError("right must be either 'C' or 'P'")
+            raise ValueError(f"right must be either 'C' or 'P', got {right}")
 
         params = {
             "root": root,

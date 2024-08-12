@@ -17,6 +17,64 @@ Get real-time OHLC:
 
 Get real-time trades:
    python main.py stocks snapshot trades TSLA
+
+Options Data:
+Historical:
+Get historical EOD report:
+   python main.py options historical eod-report AAPL 20240119 170000 C 20240101 20240131
+
+Get historical quotes:
+   python main.py options historical quotes AAPL 20240119 170000 C 20240101 20240131
+
+Get historical trades:
+   python main.py options historical trades AAPL 20240119 170000 C 20240101 20240131
+
+Get historical trade quote:
+   python main.py options historical trade-quote AAPL 20240119 170000 C 20240101 20240131
+
+Get historical Greeks:
+   python main.py options historical greeks AAPL 20240119 170000 C 20240101 20240131
+
+Get historical third-order Greeks:
+   python main.py options historical greeks-third-order AAPL 20240119 170000 C 20240101 20240131
+
+Get historical trade Greeks:
+   python main.py options historical trade-greeks AAPL 20240119 170000 C 20240101 20240131
+
+Get historical trade Greeks third order:
+   python main.py options historical trade-greeks-third-order AAPL 20240119 170000 C 20240101 20240131
+
+Bulk:
+Get bulk EOD:
+   python main.py options bulk eod AAPL 20240119 20240101 20240131
+
+Get bulk OHLC:
+   python main.py options bulk ohlc AAPL 20240119 20240101 20240131
+
+Get bulk trade:
+   python main.py options bulk trade AAPL 20240119 20240101 20240131
+
+Get bulk trade quote:
+   python main.py options bulk trade-quote AAPL 20240119 20240101 20240131
+
+Get bulk trade Greeks:
+   python main.py options bulk trade-greeks AAPL 20240119 20240101 20240131
+
+Snapshot:
+Get quote snapshot:
+   python main.py options snapshot quote AAPL 20240119 170000 C
+
+Get OHLC snapshot:
+   python main.py options snapshot ohlc AAPL 20240119 C 170000
+
+Get bulk quote snapshot:
+   python main.py options snapshot bulk-quote AAPL 20240119
+
+Get bulk OHLC snapshot:
+   python main.py options snapshot bulk-ohlc AAPL 20240119
+
+Get bulk open interest snapshot:
+   python main.py options snapshot bulk-open-interest AAPL 20240119
 """
 
 import typer
@@ -31,6 +89,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.stocks_historical import ThetaDataStocksHistorical
 from src.stocks import ThetaDataStocksSnapshot
+from src.options import ThetaDataOptions
 from typing import Optional, List
 
 app = typer.Typer()
@@ -38,13 +97,20 @@ stocks_app = typer.Typer()
 historical_app = typer.Typer()
 snapshot_app = typer.Typer()
 options_app = typer.Typer()
+options_historical_app = typer.Typer()
+options_bulk_app = typer.Typer()
+options_snapshot_app = typer.Typer()
 app.add_typer(stocks_app, name="stocks")
 stocks_app.add_typer(historical_app, name="historical")
 stocks_app.add_typer(snapshot_app, name="snapshot")
 app.add_typer(options_app, name="options")
+options_app.add_typer(options_historical_app, name="historical")
+options_app.add_typer(options_bulk_app, name="bulk")
+options_app.add_typer(options_snapshot_app, name="snapshot")
 
 historical_data = ThetaDataStocksHistorical()
 snapshot_data = ThetaDataStocksSnapshot()
+options_data = ThetaDataOptions()
 
 
 def with_spinner(func):
@@ -213,6 +279,167 @@ def snapshot_trades(symbol: str):
         typer.echo("Data retrieved successfully")
     else:
         typer.echo("Failed to retrieve data")
+
+
+# Options commands
+# Historical
+@options_historical_app.command(name="eod-report")
+@with_spinner
+def historical_eod_report(
+    root: str, exp: str, strike: int, right: str, start_date: str, end_date: str
+):
+    """Get historical end-of-day report for a specific option contract."""
+    result = options_data.get_historical_eod_report(
+        root, exp, strike, right, start_date, end_date, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_historical_app.command(name="quotes")
+@with_spinner
+def historical_option_quotes(
+    root: str,
+    exp: str,
+    strike: int,
+    right: str,
+    start_date: str,
+    end_date: str,
+    ivl: int = 0,
+):
+    """Get historical NBBO quotes for a specific option."""
+    result = options_data.get_historical_quotes(
+        root, exp, strike, right, start_date, end_date, ivl, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_historical_app.command(name="trades")
+@with_spinner
+def historical_option_trades(
+    root: str, exp: str, strike: int, right: str, start_date: str, end_date: str
+):
+    """Get historical trades for a specific option."""
+    result = options_data.get_historical_trades(
+        root, exp, strike, right, start_date, end_date, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_historical_app.command(name="trade-quote")
+@with_spinner
+def historical_option_trade_quote(
+    root: str, exp: str, strike: int, right: str, start_date: str, end_date: str
+):
+    """Get historical trade and quote data for a specific option."""
+    result = options_data.get_historical_trade_quote(
+        root, exp, strike, right, start_date, end_date, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_historical_app.command(name="greeks")
+@with_spinner
+def historical_greeks(
+    root: str,
+    exp: str,
+    strike: int,
+    right: str,
+    start_date: str,
+    end_date: str,
+    ivl: int = 0,
+):
+    """Get historical Greeks data for a specific option."""
+    result = options_data.get_historical_greeks(
+        root, exp, strike, right, start_date, end_date, ivl, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_historical_app.command(name="greeks-third-order")
+@with_spinner
+def historical_greeks_third_order(
+    root: str,
+    exp: str,
+    strike: int,
+    right: str,
+    start_date: str,
+    end_date: str,
+    ivl: int = 0,
+):
+    """Get historical third-order Greeks data for a specific option."""
+    result = options_data.get_historical_greeks_third_order(
+        root, exp, strike, right, start_date, end_date, ivl, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_historical_app.command(name="trade-greeks")
+@with_spinner
+def historical_trade_greeks(
+    root: str, exp: str, strike: int, right: str, start_date: str, end_date: str
+):
+    """Get historical trade Greeks data for a specific option."""
+    result = options_data.get_historical_trade_greeks(
+        root, exp, strike, right, start_date, end_date, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_historical_app.command(name="trade-greeks-third-order")
+@with_spinner
+def historical_trade_greeks_third_order(
+    root: str, exp: str, strike: int, right: str, start_date: str, end_date: str
+):
+    """Get historical trade Greeks third order data for a specific option."""
+    result = options_data.get_historical_trade_greeks_third_order(
+        root, exp, strike, right, start_date, end_date, write_csv=True
+    )
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+# Bulk
+@options_bulk_app.command(name="eod")
+@with_spinner
+def bulk_eod(root: str, exp: str, start_date: str, end_date: str):
+    """Get bulk end-of-day data for options with the same root and expiration."""
+    result = options_data.get_bulk_eod(root, exp, start_date, end_date, write_csv=True)
+    if result is not None:
+        typer.echo("Data retrieved successfully")
+    else:
+        typer.echo("Failed to retrieve data")
+
+
+@options_app.command(name="bulk-ohlc")
+@with_spinner
+def bulk_option_ohlc(root: str, exp: str, start_date: str, end_date: str, ivl: int = 0):
+    """Get bulk OHLC data for options with the same root and expiration."""
+    result = options_data.get_bulk_ohlc(
+        root, exp, start_date, end_date, ivl, write_csv=True
+    )
 
 
 if __name__ == "__main__":
