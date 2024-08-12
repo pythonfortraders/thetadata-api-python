@@ -1,37 +1,29 @@
 import requests
 import logging
 import pandas as pd
+import os
+
+from .utils import is_valid_date_format
 
 
 class ThetaDataStocksHistorical:
-    def __init__(self, log_level: int = logging.WARNING, use_df: bool = False) -> None:
+    def __init__(self, log_level: str = "WARNING", output_dir: str = "./") -> None:
         """
         Initialize the ThetaDataStocksHistorical class.
 
         Parameters:
-        log_level (int): The logging level to use. Defaults to logging.WARNING.
-        use_df (bool): Whether to return results as pandas DataFrames. Defaults to False.
+        log_level (str): The logging level. Defaults to "WARNING".
+        output_dir (str): The directory to save output files. Defaults to "./".
 
-        This constructor sets up logging and initializes the use_df attribute.
+        This constructor sets up logging and initializes the output directory.
         """
-        self.use_df = use_df
-
         # Configure logging
         logging.basicConfig(
-            level=log_level, format="%(asctime)s - %(levelname)s - %(message)s"
+            level=getattr(logging, log_level.upper()),
+            format="%(asctime)s - %(levelname)s - %(message)s",
         )
         self.logger = logging.getLogger(__name__)
-
-    def __init__(self, enable_logging: bool = False, use_df: bool = True) -> None:
-        self.enable_logging = enable_logging
-        self.use_df = use_df
-
-        # Configure logging
-        if self.enable_logging:
-            logging.basicConfig(
-                level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-            )
-        self.logger = logging.getLogger(__name__)
+        self.output_dir = output_dir
 
     def send_request(self, endpoint: str, params: dict) -> dict | None:
         """
@@ -46,31 +38,90 @@ class ThetaDataStocksHistorical:
 
         This method handles the HTTP request, logging, and error handling for all API calls.
         It uses a base URL of 'http://127.0.0.1:25510'.
-        If logging is enabled, it logs the request details and the outcome of the request.
         """
         url = f"http://127.0.0.1:25510{endpoint}"
         headers = {"Accept": "application/json"}
         response = None
 
         try:
-            if self.enable_logging:
-                self.logger.info(f"Sending request to {url} with params: {params}")
+            self.logger.debug(f"Sending request to {url} with params: {params}")
             response = requests.get(url, headers=headers, params=params)
             response.raise_for_status()
-            if self.enable_logging:
-                self.logger.info("Request successful")
+            self.logger.info("Request successful")
             return response.json()
         except requests.RequestException as e:
-            if self.enable_logging:
-                self.logger.error(f"An error occurred: {e}")
-                self.logger.error(
-                    f"Response text: {response.text if response else 'No response'}"
-                )
+            self.logger.error(f"An error occurred: {e}")
+            self.logger.error(
+                f"Response text: {response.text if response else 'No response'}"
+            )
             return None
 
+    def _process_response(
+        self,
+        response: dict | None,
+        write_csv: bool,
+        datatype: str,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+    ) -> pd.DataFrame | None:
+        """
+        Process the API response and return a DataFrame.
+
+        Args:
+            response (dict | None): The API response or None if the request failed.
+            write_csv (bool): If True, write the DataFrame to a CSV file.
+            datatype (str): Type of data (e.g., 'eod', 'quotes', 'ohlc').
+            symbol (str): The stock symbol.
+            start_date (str): Start date in 'YYYYMMDD' format.
+            end_date (str): End date in 'YYYYMMDD' format.
+
+        Returns:
+            pd.DataFrame | None: DataFrame of data, or None if response is None.
+        """
+        if response:
+            columns = response["header"]["format"]
+            data = response["response"]
+            df = pd.DataFrame(data, columns=columns)
+
+            if write_csv:
+                self._write_csv(df, datatype, symbol, start_date, end_date)
+
+            return df
+        else:
+            return None
+
+    def _write_csv(
+        self,
+        df: pd.DataFrame,
+        datatype: str,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+    ) -> None:
+        """
+        Write DataFrame to CSV file.
+
+        Args:
+            df (pd.DataFrame): DataFrame to write
+            datatype (str): Type of data (e.g., 'eod', 'quotes', 'ohlc')
+            symbol (str): The stock symbol
+            start_date (str): Start date in 'YYYYMMDD' format
+            end_date (str): End date in 'YYYYMMDD' format
+        """
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+            self.logger.info(f"Created output directory: {self.output_dir}")
+
+        filename = f"{datatype}_{symbol}_{start_date}_{end_date}.csv"
+        filepath = os.path.join(self.output_dir, filename)
+        df.to_csv(filepath, index=False)
+        self.logger.info(f"CSV file written: {filepath}")
+
     def get_eod_report(
-        self, symbol: str, start_date: str, end_date: str
-    ) -> pd.DataFrame | dict | None:
+        self, symbol: str, start_date: str, end_date: str, write_csv: bool = False
+    ) -> pd.DataFrame | None:
         """
         Get end-of-day report for a given symbol and date range.
 
@@ -97,42 +148,36 @@ class ThetaDataStocksHistorical:
             symbol (str): The stock symbol
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
+            write_csv (bool): If True, write the DataFrame to a CSV file
 
         Returns:
-            pd.DataFrame | dict | None: DataFrame or dict of EOD data, or None if request fails
+            pd.DataFrame | None: DataFrame of EOD data, or None if request fails
         """
         # Check if dates have the correct format
-        if not (
-            self._is_valid_date_format(start_date)
-            and self._is_valid_date_format(end_date)
-        ):
-            if self.enable_logging:
-                self.logger.error(
-                    f"Invalid date format. Expected format: 'YYYYMMDD'. Got start_date: {start_date}, end_date: {end_date}"
-                )
+        if not (is_valid_date_format(start_date) and is_valid_date_format(end_date)):
+            self.logger.error(
+                f"Invalid date format. Expected format: 'YYYYMMDD'. Got start_date: {start_date}, end_date: {end_date}"
+            )
             return None
 
-        if self.enable_logging:
-            self.logger.info(
-                f"Getting EOD report for {symbol} from {start_date} to {end_date}"
-            )
+        self.logger.info(
+            f"Getting EOD report for {symbol} from {start_date} to {end_date}"
+        )
         endpoint = "/v2/hist/stock/eod"
         params = {"root": symbol, "start_date": start_date, "end_date": end_date}
         response = self.send_request(endpoint, params)
-
-        if response and self.use_df:
-            columns = response["header"]["format"]
-            data = response["response"]
-            return pd.DataFrame(data, columns=columns)
-        else:
-            return response
-
-    def _is_valid_date_format(self, date_string: str) -> bool:
-        return len(date_string) == 8 and date_string.isdigit()
+        return self._process_response(
+            response, write_csv, "eod", symbol, start_date, end_date
+        )
 
     def get_quotes(
-        self, symbol: str, start_date: str, end_date: str, interval: str = "900000"
-    ) -> pd.DataFrame | dict | None:
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        interval: str = "900000",
+        write_csv: bool = False,
+    ) -> pd.DataFrame | None:
         """
         Get quotes for a given symbol and date range.
 
@@ -153,14 +198,12 @@ class ThetaDataStocksHistorical:
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
             interval (str): Interval in milliseconds (default: "900000")
+            write_csv (bool): If True, write the DataFrame to a CSV file
 
         Returns:
-            pd.DataFrame | dict | None: DataFrame or dict of quote data, or None if request fails
+            pd.DataFrame | None: DataFrame of quote data, or None if request fails
         """
-        if self.enable_logging:
-            self.logger.info(
-                f"Getting quotes for {symbol} from {start_date} to {end_date}"
-            )
+        self.logger.info(f"Getting quotes for {symbol} from {start_date} to {end_date}")
         endpoint = "/v2/hist/stock/quote"
         params = {
             "root": symbol,
@@ -169,17 +212,18 @@ class ThetaDataStocksHistorical:
             "ivl": interval,
         }
         response = self.send_request(endpoint, params)
-
-        if response and self.use_df:
-            columns = response["header"]["format"]
-            data = response["response"]
-            return pd.DataFrame(data, columns=columns)
-        else:
-            return response
+        return self._process_response(
+            response, write_csv, "quotes", symbol, start_date, end_date
+        )
 
     def get_ohlc(
-        self, symbol: str, start_date: str, end_date: str, interval: str = "900000"
-    ) -> pd.DataFrame | dict | None:
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        interval: str = "900000",
+        write_csv: bool = False,
+    ) -> pd.DataFrame | None:
         """
         Get OHLC (Open, High, Low, Close) data for a given symbol and date range.
 
@@ -198,14 +242,12 @@ class ThetaDataStocksHistorical:
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
             interval (str): Interval in milliseconds (default: "900000")
+            write_csv (bool): If True, write the DataFrame to a CSV file
 
         Returns:
-            pd.DataFrame | dict | None: DataFrame or dict of OHLC data, or None if request fails
+            pd.DataFrame | None: DataFrame of OHLC data, or None if request fails
         """
-        if self.enable_logging:
-            self.logger.info(
-                f"Getting OHLC for {symbol} from {start_date} to {end_date}"
-            )
+        self.logger.info(f"Getting OHLC for {symbol} from {start_date} to {end_date}")
         endpoint = "/v2/hist/stock/ohlc"
         params = {
             "root": symbol,
@@ -214,26 +256,13 @@ class ThetaDataStocksHistorical:
             "ivl": interval,
         }
         response = self.send_request(endpoint, params)
-
-        if response and self.use_df:
-            columns = [
-                "ms_of_day",
-                "open",
-                "high",
-                "low",
-                "close",
-                "volume",
-                "count",
-                "date",
-            ]
-            data = response["response"]
-            return pd.DataFrame(data, columns=columns)
-        else:
-            return response
+        return self._process_response(
+            response, write_csv, "ohlc", symbol, start_date, end_date
+        )
 
     def get_trades(
-        self, symbol: str, start_date: str, end_date: str
-    ) -> pd.DataFrame | dict | None:
+        self, symbol: str, start_date: str, end_date: str, write_csv: bool = False
+    ) -> pd.DataFrame | None:
         """
         Get historical trade data for a given symbol and date range.
 
@@ -258,14 +287,12 @@ class ThetaDataStocksHistorical:
             symbol (str): The stock symbol
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
+            write_csv (bool): If True, write the DataFrame to a CSV file
 
         Returns:
-            pd.DataFrame | dict | None: DataFrame or dict of trade data, or None if request fails
+            pd.DataFrame | None: DataFrame of trade data, or None if request fails
         """
-        if self.enable_logging:
-            self.logger.info(
-                f"Getting trades for {symbol} from {start_date} to {end_date}"
-            )
+        self.logger.info(f"Getting trades for {symbol} from {start_date} to {end_date}")
         endpoint = "/v2/hist/stock/trade"
         params = {
             "root": symbol,
@@ -273,17 +300,13 @@ class ThetaDataStocksHistorical:
             "end_date": end_date,
         }
         response = self.send_request(endpoint, params)
-
-        if response and self.use_df:
-            columns = response["header"]["format"]
-            data = response["response"]
-            return pd.DataFrame(data, columns=columns)
-        else:
-            return response
+        return self._process_response(
+            response, write_csv, "trades", symbol, start_date, end_date
+        )
 
     def get_trade_quote(
-        self, symbol: str, start_date: str, end_date: str
-    ) -> pd.DataFrame | dict | None:
+        self, symbol: str, start_date: str, end_date: str, write_csv: bool = False
+    ) -> pd.DataFrame | None:
         """
         Get historical trade and quote data for a given symbol and date range.
 
@@ -317,14 +340,14 @@ class ThetaDataStocksHistorical:
             symbol (str): The stock symbol
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
+            write_csv (bool): If True, write the DataFrame to a CSV file
 
         Returns:
-            pd.DataFrame | dict | None: DataFrame or dict of trade and quote data, or None if request fails
+            pd.DataFrame | None: DataFrame of trade and quote data, or None if request fails
         """
-        if self.enable_logging:
-            self.logger.info(
-                f"Getting trade quotes for {symbol} from {start_date} to {end_date}"
-            )
+        self.logger.info(
+            f"Getting trade quotes for {symbol} from {start_date} to {end_date}"
+        )
         endpoint = "/v2/hist/stock/trade_quote"
         params = {
             "root": symbol,
@@ -332,17 +355,13 @@ class ThetaDataStocksHistorical:
             "end_date": end_date,
         }
         response = self.send_request(endpoint, params)
-
-        if response and self.use_df:
-            columns = response["header"]["format"]
-            data = response["response"]
-            return pd.DataFrame(data, columns=columns)
-        else:
-            return response
+        return self._process_response(
+            response, write_csv, "trade_quote", symbol, start_date, end_date
+        )
 
     def get_splits(
-        self, symbol: str, start_date: str, end_date: str
-    ) -> pd.DataFrame | dict | None:
+        self, symbol: str, start_date: str, end_date: str, write_csv: bool = False
+    ) -> pd.DataFrame | None:
         """
         Get stock split data for a given symbol and date range.
 
@@ -357,14 +376,12 @@ class ThetaDataStocksHistorical:
             symbol (str): The stock symbol
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
+            write_csv (bool): If True, write the DataFrame to a CSV file
 
         Returns:
-            pd.DataFrame | dict | None: DataFrame or dict of stock split data, or None if request fails
+            pd.DataFrame | None: DataFrame of stock split data, or None if request fails
         """
-        if self.enable_logging:
-            self.logger.info(
-                f"Getting splits for {symbol} from {start_date} to {end_date}"
-            )
+        self.logger.info(f"Getting splits for {symbol} from {start_date} to {end_date}")
         endpoint = "/v2/hist/stock/split"
         params = {
             "root": symbol,
@@ -372,17 +389,13 @@ class ThetaDataStocksHistorical:
             "end_date": end_date,
         }
         response = self.send_request(endpoint, params)
-
-        if response and self.use_df:
-            columns = response["header"]["format"]
-            data = response["response"]
-            return pd.DataFrame(data, columns=columns)
-        else:
-            return response
+        return self._process_response(
+            response, write_csv, "splits", symbol, start_date, end_date
+        )
 
     def get_dividends(
-        self, symbol: str, start_date: str, end_date: str
-    ) -> pd.DataFrame | dict | None:
+        self, symbol: str, start_date: str, end_date: str, write_csv: bool = False
+    ) -> pd.DataFrame | None:
         """
         Get dividend data for a given symbol and date range.
 
@@ -401,14 +414,14 @@ class ThetaDataStocksHistorical:
             symbol (str): The stock symbol
             start_date (str): Start date in 'YYYYMMDD' format
             end_date (str): End date in 'YYYYMMDD' format
+            write_csv (bool): If True, write the DataFrame to a CSV file
 
         Returns:
-            pd.DataFrame | dict | None: DataFrame or dict of dividend data, or None if request fails
+            pd.DataFrame | None: DataFrame of dividend data, or None if request fails
         """
-        if self.enable_logging:
-            self.logger.info(
-                f"Getting dividends for {symbol} from {start_date} to {end_date}"
-            )
+        self.logger.info(
+            f"Getting dividends for {symbol} from {start_date} to {end_date}"
+        )
         endpoint = "/v2/hist/stock/dividend"
         params = {
             "root": symbol,
@@ -416,10 +429,6 @@ class ThetaDataStocksHistorical:
             "end_date": end_date,
         }
         response = self.send_request(endpoint, params)
-
-        if response and self.use_df:
-            columns = response["header"]["format"]
-            data = response["response"]
-            return pd.DataFrame(data, columns=columns)
-        else:
-            return response
+        return self._process_response(
+            response, write_csv, "dividends", symbol, start_date, end_date
+        )

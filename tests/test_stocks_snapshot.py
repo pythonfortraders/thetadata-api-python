@@ -7,7 +7,7 @@ import requests
 
 @pytest.fixture
 def snapshot_data():
-    return ThetaDataStocksSnapshot(enable_logging=False, use_df=True)
+    return ThetaDataStocksSnapshot(log_level="WARNING", output_dir="./")
 
 
 def test_get_quotes(snapshot_data):
@@ -346,44 +346,3 @@ def test_send_request_error(snapshot_data):
         result = snapshot_data.send_request("/test_endpoint", {"param": "value"})
 
     assert result is None
-
-
-def test_use_df_false(snapshot_data):
-    snapshot_data.use_df = False
-    mock_response = {
-        "header": {
-            "format": [
-                "ms_of_day",
-                "bid_size",
-                "bid_exchange",
-                "bid",
-                "bid_condition",
-                "ask_size",
-                "ask_exchange",
-                "ask",
-                "ask_condition",
-                "date",
-            ]
-        },
-        "response": [
-            [
-                "36000000",
-                "100",
-                "N",
-                "150.00",
-                "R",
-                "100",
-                "N",
-                "150.10",
-                "R",
-                "20240101",
-            ],
-        ],
-    }
-    with patch.object(
-        ThetaDataStocksSnapshot, "send_request", return_value=mock_response
-    ):
-        result = snapshot_data.get_quotes("AAPL")
-
-    assert isinstance(result, dict)
-    assert result == mock_response

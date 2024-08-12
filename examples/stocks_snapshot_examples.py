@@ -8,37 +8,37 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.stocks import ThetaDataStocksSnapshot
 
-snapshot_data = ThetaDataStocksSnapshot(enable_logging=True, use_df=True)
+snapshot_data = ThetaDataStocksSnapshot(log_level="INFO", output_dir="./output")
 
 
 @example_runner
 def apple_quotes_example():
-    return snapshot_data.get_quotes("AAPL")
+    return snapshot_data.get_quotes("AAPL", write_csv=True)
 
 
 @example_runner
 def microsoft_quotes_nqb_example():
-    return snapshot_data.get_quotes("MSFT", venue="nqb")
+    return snapshot_data.get_quotes("MSFT", venue="nqb", write_csv=True)
 
 
 @example_runner
 def bulk_quotes_example():
-    return snapshot_data.get_bulk_quotes(["GOOGL", "AMZN", "TSLA"])
+    return snapshot_data.get_bulk_quotes(["GOOGL", "AMZN", "TSLA"], write_csv=True)
 
 
 @example_runner
 def nvidia_ohlc_example():
-    return snapshot_data.get_ohlc("NVDA")
+    return snapshot_data.get_ohlc("NVDA", write_csv=True)
 
 
 @example_runner
 def bulk_ohlc_example():
-    return snapshot_data.get_bulk_ohlc(["INTC", "AMD", "QCOM"])
+    return snapshot_data.get_bulk_ohlc(["INTC", "AMD", "QCOM"], write_csv=True)
 
 
 @example_runner
 def tesla_trades_example():
-    return snapshot_data.get_trades("TSLA")
+    return snapshot_data.get_trades("TSLA", write_csv=True)
 
 
 # Toggle example cases
