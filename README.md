@@ -49,7 +49,7 @@ Subcommands nest downwards naturally. For example, let's say you want to get his
 (pft) ➜  cli git:(main) python thetadata_cli.py stocks historical ohlc AAPL 20240101 20240201
 ⠸ Loading data...Data retrieved successfully
 ```
-This will save the data as a local CSV named `ohlc_AAPL_20240101_20240201.csv`.
+This will save the data as a local CSV named `ohlc_AAPL_20240101_20240201.csv`. Many examples of CLI usage can be found [here](https://github.com/pythonfortraders/thetadata-api-python/blob/08ec0160da2519d5a0de73d8ec29ab8dd0c8d98c/cli/thetadata_cli.py#L1-L78).
 
 ### More Resources
 
