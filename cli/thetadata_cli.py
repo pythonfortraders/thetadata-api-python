@@ -92,14 +92,14 @@ from src.stocks import ThetaDataStocksSnapshot
 from src.options import ThetaDataOptions
 from typing import Optional, List
 
-app = typer.Typer()
-stocks_app = typer.Typer()
-historical_app = typer.Typer()
-snapshot_app = typer.Typer()
-options_app = typer.Typer()
-options_historical_app = typer.Typer()
-options_bulk_app = typer.Typer()
-options_snapshot_app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
+stocks_app = typer.Typer(no_args_is_help=True)
+historical_app = typer.Typer(no_args_is_help=True)
+snapshot_app = typer.Typer(no_args_is_help=True)
+options_app = typer.Typer(no_args_is_help=True)
+options_historical_app = typer.Typer(no_args_is_help=True)
+options_bulk_app = typer.Typer(no_args_is_help=True)
+options_snapshot_app = typer.Typer(no_args_is_help=True)
 app.add_typer(stocks_app, name="stocks")
 stocks_app.add_typer(historical_app, name="historical")
 stocks_app.add_typer(snapshot_app, name="snapshot")
