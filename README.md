@@ -2,7 +2,7 @@
 
 A simple, easy-to-use, unofficial Python wrapper for the [ThetaData REST API](https://http-docs.thetadata.us/docs/theta-data-rest-api-v2/4g9ms9h4009k0-getting-started).
 
-> #### Bonus: New ThetaData customers can get 30% off their first month with code **PYTHON4TRADERS**
+> #### Bonus: New ThetaData customers can get 30% off their first month with code **PYTHON4TRADERS**.
 
 ## Context
 The original [thetadata-python](https://github.com/ThetaData-API/thetadata-python) library is deprecated and it's preferred to use the REST API directly. 
@@ -16,7 +16,12 @@ Their documentation provides Python examples for the REST API that are useful an
 
 > ### Make sure [ThetaTerminal](https://http-docs.thetadata.us/docs/theta-data-rest-api-v2/4g9ms9h4009k0-getting-started#what-is-theta-terminal-and-why-do-i-need-it) is running - nothing will work without it!
 
-From Python:
+This library currently provides 3 classes for core operations: 
+* `ThetaDataStocksHistorical`
+* `ThetaDataStocksSnapshot`
+* `ThetaDataOptions`
+
+Here's an example of using the snapshot object to get current market quotes:
 
 ```
 stocks_snapshot = ThetaDataStocksSnapshot(log_level="INFO", output_dir="./output")
@@ -26,7 +31,7 @@ print(quotes_df.head())
 
 Several code examples are available [here](https://github.com/pythonfortraders/thetadata-api-python/tree/main/examples).
 
-From the command line: 
+There's also a command line interface available in `cli`. You can use it as follows: 
 
 ```
 (pft) ➜  cli git:(main) python thetadata_cli.py 
@@ -51,7 +56,7 @@ Subcommands nest downwards naturally. For example, let's say you want to get his
 ```
 This will save the data as a local CSV named `ohlc_AAPL_20240101_20240201.csv`. Many examples of CLI usage can be found [here](https://github.com/pythonfortraders/thetadata-api-python/blob/08ec0160da2519d5a0de73d8ec29ab8dd0c8d98c/cli/thetadata_cli.py#L1-L78).
 
-### More Resources
+## More Resources
 
 If you want to learn more about working with market data in Python, here are some resources for you: 
 * [Free Algo Trading Academy](https://www.skool.com/algo-trading-academy-4983)
@@ -60,3 +65,6 @@ If you want to learn more about working with market data in Python, here are som
   * Learn to acquire, augment, analyze, and automate the way you work with financial data.
 * [Project: Securities Master Database and ETL Pipeline](https://skool.com/pythonfortraders):
   * Build a securities database and data pipeline that you can apply and adopt for your own market data needs right away.
+
+---
+### Need help? The best way to get support is to ask a question [here](https://www.skool.com/algo-trading-academy-4983). 
