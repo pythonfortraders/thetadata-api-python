@@ -1,8 +1,10 @@
 import pytest
-from unittest.mock import patch
-from src.stocks_historical import ThetaDataStocksHistorical
 import pandas as pd
 import requests
+
+from unittest.mock import patch
+from src.stocks_historical import ThetaDataStocksHistorical
+from src.utils import is_valid_date_format
 
 
 @pytest.fixture
@@ -213,11 +215,7 @@ def test_send_request_error(historical_data):
 
 
 def test_is_valid_date_format():
-    from src.utils import is_valid_date_format
-
-    assert is_valid_date_format("20240101") == True
-    assert is_valid_date_format("2024-01-01") == False
-    assert (
-        is_valid_date_format("20240132") == True
-    )  # Note: This doesn't check for valid dates, just format
-    assert is_valid_date_format("202401") == False
+    assert not is_valid_date_format("2024-01-01")
+    assert not is_valid_date_format("202401")
+    assert is_valid_date_format("20240101")
+    assert is_valid_date_format("20240132")
