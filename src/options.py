@@ -1,7 +1,4 @@
-import requests
-import logging
 import pandas as pd
-import os
 
 from .base import ThetaDataBase
 from .utils import is_valid_right, is_valid_ivl

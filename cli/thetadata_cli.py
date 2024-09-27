@@ -78,7 +78,6 @@ Get bulk open interest snapshot:
 """
 
 import typer
-import pandas as pd
 import sys
 import os
 from functools import wraps
@@ -437,9 +436,7 @@ def bulk_eod(root: str, exp: str, start_date: str, end_date: str):
 @with_spinner
 def bulk_option_ohlc(root: str, exp: str, start_date: str, end_date: str, ivl: int = 0):
     """Get bulk OHLC data for options with the same root and expiration."""
-    result = options_data.get_bulk_ohlc(
-        root, exp, start_date, end_date, ivl, write_csv=True
-    )
+    options_data.get_bulk_ohlc(root, exp, start_date, end_date, ivl, write_csv=True)
 
 
 if __name__ == "__main__":
