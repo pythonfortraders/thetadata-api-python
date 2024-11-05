@@ -1,6 +1,6 @@
 # thetadata-api-python
 
-A simple, easy-to-use, unofficial Python wrapper for the [ThetaData REST API](https://http-docs.thetadata.us/docs/theta-data-rest-api-v2/4g9ms9h4009k0-getting-started).
+This repo implements an unofficial Python wrapper for the [ThetaData REST API](https://http-docs.thetadata.us/docs/theta-data-rest-api-v2/4g9ms9h4009k0-getting-started).
 
 > #### Bonus: New ThetaData customers can get 30% off their first month with code **PYTHON4TRADERS**.
 
@@ -58,13 +58,5 @@ This will save the data as a local CSV named `ohlc_AAPL_20240101_20240201.csv`. 
 
 ## More Resources
 
-If you want to learn more about working with market data in Python, here are some resources for you: 
-* [Free Algo Trading Academy](https://www.skool.com/algo-trading-academy-4983)
-* [Free Tutorial Videos](https://www.youtube.com/@PythonforTraders)
-* [Course: Financial Data Mastery](https://skool.com/pythonfortraders)
-  * Learn to acquire, augment, analyze, and automate the way you work with financial data.
-* [Project: Securities Master Database and ETL Pipeline](https://skool.com/pythonfortraders):
-  * Build a securities database and data pipeline that you can apply and adopt for your own market data needs right away.
-
----
-### Need help? The best way to get support is to ask a question [here](https://www.skool.com/algo-trading-academy-4983). 
+* [Algo Trading Community](https://www.skool.com/algos)
+* [Python Tutorial Videos](https://www.youtube.com/@PythonforTraders)
